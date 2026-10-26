@@ -47,10 +47,19 @@
         .guide-card h3 { font-size: 15px; color: #8b9df9; margin-bottom: 10px; font-weight: 600; }
         .guide-card p { color: var(--text-sub); margin-bottom: 12px; }
         .guide-card ul { list-style: none; padding-left: 0; color: var(--text-sub); margin-bottom: 15px; }
-        .guide-card li { position: relative; padding-left: 20px; margin-bottom: 6px; }
+        
+        /* 修正星星與文字排版 */
+        .guide-card li { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 8px; 
+            margin-bottom: 8px; 
+        }
+        .guide-card li span { flex: 1; }
+        .star-group { display: flex; flex-shrink: 0; margin-top: 2px; }
         
         /* 星星 SVG */
-        .star-icon { position: absolute; left: 0; top: 3px; width: 14px; height: 14px; fill: var(--yellow); }
+        .star-icon { width: 14px; height: 14px; fill: var(--yellow); }
         
         .instruction-title { font-size: 13px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         
@@ -91,6 +100,7 @@
         /* 表格區 */
         .main-content { flex: 1; padding: 40px; display: flex; justify-content: center; overflow-x: auto; }
         .schedule-wrapper { width: 100%; max-width: 850px; background-color: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
         .schedule-grid { display: grid; grid-template-columns: 70px repeat(7, 1fr); gap: 8px; user-select: none; }
         
         .header-cell { font-size: 14px; color: var(--text-sub); text-align: center; padding-bottom: 12px; font-weight: 600; }
@@ -99,9 +109,12 @@
         .slot { 
             background-color: var(--bg); border: 1px solid var(--border); border-radius: 8px; height: 44px; 
             cursor: pointer; transition: all 0.1s; display: flex; justify-content: center; align-items: center; 
+            /* 關鍵：阻止手機瀏覽器的預設滑動行為，這樣才能順利拉排 */
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent; /* 移除手機點擊的藍色底 */
         }
         .slot:hover { border-color: var(--text-sub); }
-        .slot svg { width: 18px; height: 18px; opacity: 0; transition: opacity 0.2s; }
+        .slot svg { width: 18px; height: 18px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
         
         /* 狀態樣式 */
         .slot[data-status="free"] { background-color: var(--green-bg); border-color: var(--green); }
@@ -140,17 +153,19 @@
             <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
             <ul>
                 <li>
-                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    若想換色不用清除直接新色覆蓋。
+                    <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                    <span>若想換色不用清除直接新色覆蓋。</span>
                 </li>
                 <li>
-                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    若想取消上色，再次點擊該格即可。
+                    <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                    <span>若想取消上色，再次點擊該格即可。</span>
                 </li>
                 <li>
-                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <svg class="star-icon" style="left: 14px;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    可以直接按住滑鼠/手指拉一整排！
+                    <div class="star-group">
+                        <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <span>可以直接按住滑鼠/手指拉一整排！</span>
                 </li>
             </ul>
             <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
@@ -213,6 +228,7 @@
 
         let currentBrush = 'free';
         let isDrawing = false;
+        let lastSlotId = null; // 防止同一格重複觸發
 
         // SVG 圖標定義
         const SVGS = {
@@ -293,34 +309,26 @@
                     slot.className = 'slot';
                     slot.dataset.day = dayNum;
                     slot.dataset.time = hour;
+                    slot.dataset.id = `${dayNum}_${hour}`; // 用於防重複判定
                     
                     const savedStatus = localDataMap[`${dayNum}_${hour}`] || 'none';
                     setSlotStatus(slot, savedStatus);
 
-                    // 滑鼠事件
-                    slot.addEventListener('mousedown', (e) => {
-                        e.preventDefault(); // 防止選字
+                    // 核心事件綁定 (Pointer Events 完美兼容滑鼠與手機)
+                    slot.addEventListener('pointerdown', (e) => {
+                        // 阻止手機長按與選字
+                        e.preventDefault(); 
                         isDrawing = true;
+                        lastSlotId = slot.dataset.id;
                         applyBrush(slot);
-                    });
-                    slot.addEventListener('mouseenter', () => {
-                        if (isDrawing) applyBrush(slot);
                     });
 
-                    // 觸控事件 (手機)
-                    slot.addEventListener('touchstart', (e) => {
-                        isDrawing = true;
-                        applyBrush(slot);
-                    }, { passive: true });
-                    
-                    slot.addEventListener('touchmove', (e) => {
-                        if (!isDrawing) return;
-                        const touch = e.touches[0];
-                        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                        if (element && element.classList.contains('slot')) {
-                            applyBrush(element);
+                    slot.addEventListener('pointerenter', () => {
+                        if (isDrawing && lastSlotId !== slot.dataset.id) {
+                            lastSlotId = slot.dataset.id;
+                            applyBrush(slot);
                         }
-                    }, { passive: true });
+                    });
 
                     grid.appendChild(slot);
                 });
@@ -352,9 +360,12 @@
             }
         }
 
-        // 全域放開滑鼠/手指
-        window.addEventListener('mouseup', () => isDrawing = false);
-        window.addEventListener('touchend', () => isDrawing = false);
+        // 全域放開事件 (指標事件)
+        window.addEventListener('pointerup', () => { isDrawing = false; lastSlotId = null; });
+        window.addEventListener('pointercancel', () => { isDrawing = false; lastSlotId = null; });
+        
+        // 阻止拖曳時選取文字 (雙重保險)
+        document.addEventListener('dragstart', (e) => e.preventDefault());
 
         // 收集資料
         function getSlotsData() {

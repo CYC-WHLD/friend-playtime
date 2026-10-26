@@ -51,7 +51,7 @@
             color: #8b9df9;
             font-weight: 600;
             cursor: pointer;
-            list-style: none; /* 隱藏預設箭頭 */
+            list-style: none; 
             outline: none;
             display: flex;
             justify-content: space-between;
@@ -156,8 +156,7 @@
                 gap: 12px;
             }
             
-            /* 顯示標題與用戶資訊 */
-            .sidebar h1 { display: none; } /* 標題太佔空間隱藏 */
+            .sidebar h1 { display: none; } 
             .user-info { 
                 display: block; 
                 padding-bottom: 8px; 
@@ -166,11 +165,9 @@
             }
             .user-info span { font-size: 14px; }
 
-            /* 說明卡片改為摺疊，節省空間 */
             .guide-card { padding: 12px; }
             .guide-summary { font-size: 14px; }
             
-            /* 畫筆橫向排列 */
             .palette { 
                 flex-direction: row; 
                 gap: 6px; 
@@ -186,7 +183,6 @@
             .brush-icon { width: 16px; height: 16px; }
             .instruction-title { display: none; }
             
-            /* 按鈕區固定在底部 */
             .btn-group { 
                 position: fixed;
                 bottom: 0;
@@ -203,7 +199,6 @@
             .draft-btn { flex: 1; }
             .submit-btn { flex: 1; }
             
-            /* 表格區：正方形格子，不需要左右滑動 */
             .main-content { 
                 flex: 1; 
                 padding: 10px; 
@@ -217,7 +212,6 @@
                 width: 100%;
             }
             
-            /* 7天平分寬度，時間欄縮小 */
             .schedule-grid { 
                 grid-template-columns: 40px repeat(7, 1fr); 
                 gap: 4px; 
@@ -229,13 +223,11 @@
             }
             .header-cell { font-size: 11px; padding-bottom: 6px; }
             
-            /* 🌟 格子變正方形 */
             .slot { 
                 height: auto; 
                 aspect-ratio: 1 / 1; 
                 border-radius: 4px; 
             }
-            /* 圖標縮小以適應正方形 */
             .slot svg { width: 12px; height: 12px; }
         }
     </style>
@@ -413,18 +405,12 @@
                     const savedStatus = localDataMap[`${dayNum}_${hour}`] || 'none';
                     setSlotStatus(slot, savedStatus);
 
+                    // 核心事件綁定：只在開始時觸發
                     slot.addEventListener('pointerdown', (e) => {
                         e.preventDefault(); 
                         isDrawing = true;
                         lastSlotId = slot.dataset.id;
                         applyBrush(slot);
-                    });
-
-                    slot.addEventListener('pointerenter', () => {
-                        if (isDrawing && lastSlotId !== slot.dataset.id) {
-                            lastSlotId = slot.dataset.id;
-                            applyBrush(slot);
-                        }
                     });
 
                     grid.appendChild(slot);
@@ -453,6 +439,21 @@
                 slot.innerHTML = SVGS[status];
             }
         }
+
+        // 🌟 全新精準滑動判定機制：使用 elementFromPoint 抓取座標
+        window.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+            
+            // 取得目前手指/滑鼠座標正下方的元素
+            const element = document.elementFromPoint(e.clientX, e.clientY);
+            
+            if (element && element.classList.contains('slot')) {
+                if (lastSlotId !== element.dataset.id) {
+                    lastSlotId = element.dataset.id;
+                    applyBrush(element);
+                }
+            }
+        }, { passive: true });
 
         window.addEventListener('pointerup', () => { isDrawing = false; lastSlotId = null; });
         window.addEventListener('pointercancel', () => { isDrawing = false; lastSlotId = null; });

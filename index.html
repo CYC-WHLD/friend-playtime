@@ -12,37 +12,83 @@
             --text-main: #e2e8f0;
             --text-sub: #94a3b8;
             --border: #2d333b;
+            
+            /* 狀態顏色 */
             --green: #238636;
             --green-bg: rgba(35, 134, 54, 0.25);
             --red: #da3633;
             --red-bg: rgba(218, 54, 51, 0.25);
             --yellow: #d29922;
             --yellow-bg: rgba(210, 153, 34, 0.25);
+            
+            --active-border: #ffffff;
+            --info-bg: rgba(88, 101, 242, 0.15);
+            --info-border: rgba(88, 101, 242, 0.5);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
         body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
         /* 側邊欄 */
-        .sidebar { width: 280px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+        .sidebar { width: 320px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
         .sidebar h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
         .user-info { font-size: 15px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         .user-info span { color: var(--text-main); font-weight: 600; font-size: 16px; }
-        .instruction { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
         
-        /* 圖例 */
-        .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        .box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
-        .box.green { background-color: var(--green-bg); border-color: var(--green); color: var(--green); }
-        .box.red { background-color: var(--red-bg); border-color: var(--red); color: var(--red); }
-        .box.yellow { background-color: var(--yellow-bg); border-color: var(--yellow); color: var(--yellow); }
+        .instruction-title { font-size: 13px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         
-        .save-btn { margin-top: auto; background-color: var(--text-main); color: var(--bg); border: none; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
+        /* 調色盤 (畫筆區) */
+        .palette { display: flex; flex-direction: column; gap: 10px; }
+        .brush-btn { 
+            display: flex; align-items: center; gap: 12px; 
+            background-color: var(--bg); border: 1px solid var(--border); 
+            padding: 12px 15px; border-radius: 8px; cursor: pointer; 
+            transition: all 0.2s; font-size: 15px; font-weight: 500; color: var(--text-main);
+        }
+        .brush-btn:hover { border-color: var(--text-sub); }
+        
+        /* 畫筆被選中的狀態 */
+        .brush-btn.active { border-color: var(--active-border); box-shadow: 0 0 10px rgba(255,255,255,0.1); background-color: var(--card-bg); }
+        .brush-btn.active[data-brush="free"] { border-color: var(--green); background-color: var(--green-bg); }
+        .brush-btn.active[data-brush="busy"] { border-color: var(--red); background-color: var(--red-bg); }
+        .brush-btn.active[data-brush="maybe"] { border-color: var(--yellow); background-color: var(--yellow-bg); }
+        
+        .brush-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
+        .brush-btn[data-brush="free"] .brush-icon { background-color: var(--green); color: #fff; }
+        .brush-btn[data-brush="busy"] .brush-icon { background-color: var(--red); color: #fff; }
+        .brush-btn[data-brush="maybe"] .brush-icon { background-color: var(--yellow); color: #fff; }
+        .brush-btn[data-brush="eraser"] .brush-icon { background-color: transparent; border: 1px dashed var(--text-sub); color: var(--text-sub); }
+
+        /* 🌟 本地暫存說明卡片 */
+        .local-save-notice {
+            background-color: var(--info-bg);
+            border: 1px solid var(--info-border);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-main);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .notice-icon { font-size: 20px; line-height: 1; }
+        .notice-text strong { color: #8b9df9; display: block; margin-bottom: 4px; font-size: 14px; }
+        .notice-text span { color: var(--text-sub); font-size: 12px; display: block; margin-top: 5px; }
+
+        /* 儲存按鈕 */
+        .save-btn { 
+            margin-top: auto; background-color: var(--text-main); color: var(--bg); 
+            border: none; padding: 14px; font-size: 16px; font-weight: 600; 
+            border-radius: 8px; cursor: pointer; transition: all 0.3s; 
+        }
         .save-btn:hover { opacity: 0.8; }
         .save-btn:disabled { background-color: var(--border); color: var(--text-sub); cursor: not-allowed; }
+        
+        /* 當有暫存時，按鈕微微發光 */
+        .save-btn.unsaved { box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
-        /* 主要表格區 (限制最大寬度) */
+        /* 主要表格區 */
         .main-content { flex: 1; padding: 40px; display: flex; justify-content: center; overflow-x: auto; }
         .schedule-wrapper { width: 100%; max-width: 850px; background-color: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
@@ -58,7 +104,7 @@
             border-radius: 8px; 
             height: 44px; 
             cursor: pointer; 
-            transition: all 0.15s; 
+            transition: all 0.1s; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -68,7 +114,7 @@
         }
         .slot:hover { border-color: var(--text-sub); transform: scale(1.02); }
         
-        /* 狀態樣式 */
+        /* 格子狀態樣式 */
         .slot[data-status="free"] { background-color: var(--green-bg); border-color: var(--green); color: var(--green); }
         .slot[data-status="busy"] { background-color: var(--red-bg); border-color: var(--red); color: var(--red); }
         .slot[data-status="maybe"] { background-color: var(--yellow-bg); border-color: var(--yellow); color: var(--yellow); }
@@ -77,10 +123,12 @@
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+            .palette { flex-direction: row; flex-wrap: wrap; }
+            .brush-btn { flex: 1; min-width: 120px; justify-content: center; }
             .main-content { padding: 20px 10px; }
             .schedule-grid { min-width: 600px; gap: 6px; }
             .slot { height: 40px; border-radius: 6px; }
-            .save-btn { margin-top: 20px; width: 100%; }
+            .save-btn { margin-top: 10px; width: 100%; }
         }
     </style>
 </head>
@@ -90,13 +138,31 @@
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
         
-        <div class="instruction">
-            <p>點擊格子標記狀態：</p>
-            <div class="legend">
-                <div class="legend-item"><div class="box green">○</div> 可以玩</div>
-                <div class="legend-item"><div class="box red">✕</div> 不行 / 上課</div>
-                <div class="legend-item"><div class="box yellow">△</div> 看情況</div>
-                <div class="legend-item"><div class="box"></div> 點擊 4 次清除</div>
+        <div>
+            <div class="instruction-title">1. 選擇畫筆</div>
+            <div class="palette" id="palette">
+                <div class="brush-btn active" data-brush="free">
+                    <div class="brush-icon">○</div> 可以玩
+                </div>
+                <div class="brush-btn" data-brush="busy">
+                    <div class="brush-icon">✕</div> 不行 / 上課
+                </div>
+                <div class="brush-btn" data-brush="maybe">
+                    <div class="brush-icon">△</div> 看情況
+                </div>
+                <div class="brush-btn" data-brush="eraser">
+                    <div class="brush-icon"></div> 橡皮擦 (清除)
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 醒目提示框 -->
+        <div class="local-save-notice">
+            <div class="notice-icon">💾</div>
+            <div class="notice-text">
+                <strong>已開啟自動暫存</strong>
+                你的點擊會自動保存在這台裝置的瀏覽器中，就算不小心關掉網頁，下次點同一個連結打開，進度依然會保留！
+                <span>確認全部填寫完畢後，請點擊下方按鈕同步。</span>
             </div>
         </div>
 
@@ -125,8 +191,21 @@
         const urlParams = new URLSearchParams(window.location.search);
         const uid = urlParams.get('uid');
         const gid = urlParams.get('gid');
+        const LOCAL_STORAGE_KEY = `schedule_${gid}_${uid}`;
 
-        // 🌟 獲取 Discord 用戶名稱
+        let currentBrush = 'free';
+        const saveBtn = document.getElementById('saveBtn');
+
+        // 1. 切換畫筆
+        document.querySelectorAll('.brush-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentBrush = btn.dataset.brush;
+            });
+        });
+
+        // 2. 獲取 Discord 用戶名稱
         async function fetchUserName() {
             if (!uid) return '未知玩家';
             try {
@@ -138,6 +217,23 @@
             }
         }
 
+        // 3. 本地暫存邏輯
+        function saveToLocal(slots) {
+            const dataToSave = {};
+            slots.forEach(s => { dataToSave[`${s.day}_${s.time}`] = s.status; });
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+            
+            // 提示使用者：有尚未同步的變更
+            saveBtn.classList.add('unsaved');
+        }
+
+        function loadFromLocal() {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (!saved) return {};
+            try { return JSON.parse(saved); } catch { return {}; }
+        }
+
+        // 4. 初始化網頁
         async function init() {
             if (!uid || !gid) {
                 document.getElementById('userInfo').innerHTML = '<span style="color:var(--red)">錯誤：無效的連結</span>';
@@ -148,7 +244,10 @@
             document.getElementById('userInfo').innerHTML = `正在編輯：<span>${username}</span>`;
 
             const grid = document.getElementById('grid');
-            grid.innerHTML = ''; // 清空
+            grid.innerHTML = ''; 
+            
+            const localData = loadFromLocal();
+            let hasLocalData = false;
 
             // 建立表頭
             const headerFragment = document.createDocumentFragment();
@@ -161,7 +260,7 @@
             });
             grid.appendChild(headerFragment);
 
-            // 建立表格內容 (修復點擊 Bug，純用 appendChild)
+            // 建立表格內容
             HOURS.forEach(hour => {
                 const timeCell = document.createElement('div');
                 timeCell.className = 'time-cell';
@@ -169,39 +268,56 @@
                 grid.appendChild(timeCell);
 
                 DAYS.forEach((_, dayIndex) => {
+                    const dayNum = dayIndex + 1;
                     const slot = document.createElement('div');
                     slot.className = 'slot';
-                    slot.dataset.day = dayIndex + 1;
+                    slot.dataset.day = dayNum;
                     slot.dataset.time = hour;
-                    slot.dataset.status = 'none'; // 預設狀態
+                    
+                    const savedStatus = localData[`${dayNum}_${hour}`] || 'none';
+                    setSlotStatus(slot, savedStatus);
+                    if (savedStatus !== 'none') hasLocalData = true;
 
-                    // 點擊事件：灰 -> 綠 -> 紅 -> 黃 -> 灰
+                    // 點擊事件
                     slot.addEventListener('click', () => {
-                        const current = slot.dataset.status;
-                        let next = 'none';
-                        let text = '';
+                        const currentStatus = slot.dataset.status;
+                        let newStatus = 'none';
 
-                        if (current === 'none') { next = 'free'; text = '○'; }
-                        else if (current === 'free') { next = 'busy'; text = '✕'; }
-                        else if (current === 'busy') { next = 'maybe'; text = '△'; }
-                        else { next = 'none'; text = ''; }
+                        if (currentBrush === 'eraser') {
+                            newStatus = 'none';
+                        } else {
+                            if (currentStatus === currentBrush) {
+                                newStatus = 'none';
+                            } else {
+                                newStatus = currentBrush;
+                            }
+                        }
 
-                        slot.dataset.status = next;
-                        slot.innerText = text;
+                        setSlotStatus(slot, newStatus);
+                        collectAndSaveLocal();
                     });
 
                     grid.appendChild(slot);
                 });
             });
+
+            // 如果載入時發現有暫存資料，按鈕發光提醒
+            if (hasLocalData) {
+                saveBtn.classList.add('unsaved');
+            }
         }
 
-        // 儲存資料
-        document.getElementById('saveBtn').addEventListener('click', async (e) => {
-            if (!uid || !gid) return alert('無效的連結');
-            const btn = e.target;
-            btn.disabled = true;
-            btn.innerText = '儲存中...';
+        // 更新格子畫面
+        function setSlotStatus(slot, status) {
+            slot.dataset.status = status;
+            if (status === 'free') slot.innerText = '○';
+            else if (status === 'busy') slot.innerText = '✕';
+            else if (status === 'maybe') slot.innerText = '△';
+            else slot.innerText = '';
+        }
 
+        // 收集目前資料並存到本地
+        function collectAndSaveLocal() {
             const slots = [];
             document.querySelectorAll('.slot').forEach(slot => {
                 if (slot.dataset.status !== 'none') {
@@ -212,6 +328,19 @@
                     });
                 }
             });
+            saveToLocal(slots);
+            return slots;
+        }
+
+        // 5. 儲存至伺服器
+        saveBtn.addEventListener('click', async (e) => {
+            if (!uid || !gid) return alert('無效的連結');
+            const btn = e.target;
+            btn.disabled = true;
+            btn.innerText = '儲存中...';
+            btn.classList.remove('unsaved');
+
+            const slots = collectAndSaveLocal();
 
             try {
                 const res = await fetch(API_URL, {
@@ -232,6 +361,7 @@
                 btn.style.backgroundColor = 'var(--red)';
                 btn.style.color = '#fff';
                 btn.disabled = false;
+                btn.classList.add('unsaved');
             }
         });
 

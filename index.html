@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬空堂登記表</title>
+    <title>專屬空堂登記表 | Class08</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,9 +14,20 @@
             align-items: center;
             padding: 20px;
             margin: 0;
+            min-height: 100vh;
         }
-        h1 { color: #5865F2; }
-        p { color: #b9bbbe; margin-bottom: 20px; }
+        
+        /* 讓主要內容自動撐開，把 Footer 推到底部 */
+        .main-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #5865F2; margin-bottom: 5px; }
+        p.subtitle { color: #b9bbbe; margin-bottom: 25px; text-align: center; }
         
         /* 表格容器 */
         .schedule-container {
@@ -61,9 +72,7 @@
             color: #555;
         }
 
-        .cell:hover {
-            border-color: #5865F2;
-        }
+        .cell:hover { border-color: #5865F2; }
 
         /* 被選中的空堂 (綠色) */
         .cell.selected {
@@ -92,30 +101,64 @@
         .save-btn:hover { background: #1e8e4d; }
         .save-btn:disabled { background: #555; cursor: not-allowed; }
 
+        /* 🌟 頁尾 (Footer) 樣式 */
+        .footer {
+            margin-top: 50px;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #313338;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #949ba4;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #5865F2;
+            text-decoration: underline;
+        }
+
         /* 手機版優化 */
         @media (max-width: 600px) {
             .schedule-container { grid-template-columns: 40px repeat(5, 1fr); gap: 4px; padding: 8px; }
             .cell { height: 40px; font-size: 10px; }
             .header, .time-label { font-size: 12px; padding: 5px 2px; }
+            .footer { flex-direction: column; align-items: center; gap: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>📅 登記空堂</h1>
-    <p>請直接在下方點擊（或按住拖曳）你沒課的時間。<span style="color:#23a55a">綠色</span>代表有空。</p>
+    <div class="main-content">
+        <h1>📅 登記空堂</h1>
+        <p class="subtitle">請點擊（或按住拖曳）你沒課的時間。<br><span style="color:#23a55a">綠色代表有空</span>，未選取代表有課或沒空。</p>
 
-    <div class="schedule-container" id="grid">
-        <!-- JS 會自動生成格子 -->
+        <div class="schedule-container" id="grid">
+            <!-- JS 會自動生成格子 -->
+        </div>
+
+        <button class="save-btn" id="saveBtn">💾 儲存並同步至 Discord</button>
     </div>
 
-    <button class="save-btn" id="saveBtn">💾 儲存並同步至 Discord</button>
+    <!-- 🌟 機器人政策連結 (合規必須) -->
+    <div class="footer">
+        <a href="https://cyc-whld.github.io/Discord-Countdown-bot/" target="_blank" rel="noopener">服務條款 (Terms of Service)</a>
+        <a href="https://cyc-whld.github.io/Discord-Countdown-bot/#privacy" target="_blank" rel="noopener">隱私權政策 (Privacy Policy)</a>
+        <a href="https://discord.gg/nXaNZrXtMx" target="_blank" rel="noopener">聯絡我們 (Support Server)</a>
+    </div>
 
     <script>
         // 你的 Cloudflare Worker 網址
         const API_URL = 'https://你的worker網址.workers.dev/api/save-schedule';
         
-        // 節次定義 (對齊原本的設定)
+        // 節次定義
         const PERIODS = [
             { id: '1', label: '1 (08:10)' },
             { id: '2', label: '2 (09:10)' },
@@ -141,12 +184,12 @@
         const gid = urlParams.get('gid');
 
         if (!uid || !gid) {
-            alert('無效的連結，請從 Discord 重新獲取！');
+            alert('無效的連結，請從 Discord 機器人重新獲取！');
         }
 
         const grid = document.getElementById('grid');
         
-        // 1. 生成表頭 (左上角留空 + 星期一~五)
+        // 1. 生成表頭
         grid.innerHTML += `<div class="header"></div>`;
         DAYS.forEach(d => {
             grid.innerHTML += `<div class="header">${d.label}</div>`;
@@ -154,10 +197,7 @@
 
         // 2. 生成表格內容
         PERIODS.forEach(p => {
-            // 左側節次
             grid.innerHTML += `<div class="time-label">${p.label}</div>`;
-            
-            // 每一格
             DAYS.forEach(d => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
@@ -182,19 +222,15 @@
             btn.disabled = true;
             btn.textContent = '儲存中...';
 
-            // 把選取的格子轉換成資料庫需要的格式
-            // 因為網頁是按格子點，我們把同一行的連續格子合併成時段
             let freeSlots = [];
             
             DAYS.forEach(d => {
-                // 找出這一天所有被選中的節次
                 const selectedPeriods = Array.from(grid.querySelectorAll(`.cell.selected[data-day="${d.id}"]`))
                     .map(c => parseInt(c.dataset.period))
-                    .sort((a, b) => a - b); // 重新排序節次 (1,2,3...)
+                    .sort((a, b) => a - b);
 
                 if (selectedPeriods.length === 0) return;
 
-                // 演算法：合併連續節次
                 let start = selectedPeriods[0];
                 let prev = selectedPeriods[0];
                 const timeMap = {
@@ -205,14 +241,12 @@
 
                 for (let i = 1; i < selectedPeriods.length; i++) {
                     const cur = selectedPeriods[i];
-                    // 如果中斷了 (例如選了 1, 2, 5)
                     if (cur !== prev + 1) {
                         freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
                         start = cur;
                     }
                     prev = cur;
                 }
-                // 推入最後一段
                 freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
             });
 

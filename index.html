@@ -13,52 +13,73 @@
             --text-sub: #94a3b8;
             --border: #2d333b;
             --green: #238636;
-            --green-bg: rgba(35, 134, 54, 0.2);
+            --green-bg: rgba(35, 134, 54, 0.25);
             --red: #da3633;
-            --red-bg: rgba(218, 54, 51, 0.2);
+            --red-bg: rgba(218, 54, 51, 0.25);
             --yellow: #d29922;
-            --yellow-bg: rgba(210, 153, 34, 0.2);
+            --yellow-bg: rgba(210, 153, 34, 0.25);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
         body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
-        /* 左側說明欄 */
-        .sidebar { width: 300px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .sidebar h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
-        .user-info { font-size: 14px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .user-info span { color: var(--text-main); font-weight: 600; }
+        /* 側邊欄 */
+        .sidebar { width: 280px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+        .sidebar h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+        .user-info { font-size: 15px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .user-info span { color: var(--text-main); font-weight: 600; font-size: 16px; }
         .instruction { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
-        .legend { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        .box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); }
-        .box.green { background-color: var(--green); border-color: var(--green); }
-        .box.red { background-color: var(--red); border-color: var(--red); }
-        .box.yellow { background-color: var(--yellow); border-color: var(--yellow); }
         
-        .save-btn { margin-top: auto; background-color: var(--text-main); color: var(--bg); border: none; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        /* 圖例 */
+        .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
+        .box.green { background-color: var(--green-bg); border-color: var(--green); color: var(--green); }
+        .box.red { background-color: var(--red-bg); border-color: var(--red); color: var(--red); }
+        .box.yellow { background-color: var(--yellow-bg); border-color: var(--yellow); color: var(--yellow); }
+        
+        .save-btn { margin-top: auto; background-color: var(--text-main); color: var(--bg); border: none; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
         .save-btn:hover { opacity: 0.8; }
         .save-btn:disabled { background-color: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
-        /* 右側表格區 */
-        .main-content { flex: 1; padding: 30px; overflow-x: auto; }
-        .schedule-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 4px; min-width: 800px; }
+        /* 主要表格區 (限制最大寬度) */
+        .main-content { flex: 1; padding: 40px; display: flex; justify-content: center; overflow-x: auto; }
+        .schedule-wrapper { width: 100%; max-width: 850px; background-color: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
-        .header-cell { font-size: 13px; color: var(--text-sub); text-align: center; padding-bottom: 10px; font-weight: 600; }
-        .time-cell { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+        .schedule-grid { display: grid; grid-template-columns: 70px repeat(7, 1fr); gap: 8px; }
         
-        .slot { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; height: 36px; cursor: pointer; transition: all 0.15s; }
-        .slot:hover { border-color: var(--text-sub); }
+        .header-cell { font-size: 14px; color: var(--text-sub); text-align: center; padding-bottom: 12px; font-weight: 600; }
+        .time-cell { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: 500; }
         
-        /* 三種狀態 */
-        .slot.free { background-color: var(--green-bg); border-color: var(--green); }
-        .slot.busy { background-color: var(--red-bg); border-color: var(--red); }
-        .slot.maybe { background-color: var(--yellow-bg); border-color: var(--yellow); }
+        /* 格子設計 */
+        .slot { 
+            background-color: var(--bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            height: 44px; 
+            cursor: pointer; 
+            transition: all 0.15s; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 18px;
+            font-weight: bold;
+            user-select: none;
+        }
+        .slot:hover { border-color: var(--text-sub); transform: scale(1.02); }
+        
+        /* 狀態樣式 */
+        .slot[data-status="free"] { background-color: var(--green-bg); border-color: var(--green); color: var(--green); }
+        .slot[data-status="busy"] { background-color: var(--red-bg); border-color: var(--red); color: var(--red); }
+        .slot[data-status="maybe"] { background-color: var(--yellow-bg); border-color: var(--yellow); color: var(--yellow); }
 
-        /* 手機版調整 */
+        /* 手機版響應式 */
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
             .main-content { padding: 20px 10px; }
+            .schedule-grid { min-width: 600px; gap: 6px; }
+            .slot { height: 40px; border-radius: 6px; }
             .save-btn { margin-top: 20px; width: 100%; }
         }
     </style>
@@ -67,15 +88,15 @@
 
     <aside class="sidebar">
         <h1>玩家空堂登記</h1>
-        <div class="user-info" id="userInfo">載入中...</div>
+        <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
         
         <div class="instruction">
-            <p>請點擊表格中的時間格子來標記你的狀態：</p>
+            <p>點擊格子標記狀態：</p>
             <div class="legend">
-                <div class="legend-item"><div class="box green"></div> 點擊 1 次：可以玩</div>
-                <div class="legend-item"><div class="box red"></div> 點擊 2 次：不行 / 上課</div>
-                <div class="legend-item"><div class="box yellow"></div> 點擊 3 次：看情況</div>
-                <div class="legend-item"><div class="box"></div> 點擊 4 次：清除狀態</div>
+                <div class="legend-item"><div class="box green">○</div> 可以玩</div>
+                <div class="legend-item"><div class="box red">✕</div> 不行 / 上課</div>
+                <div class="legend-item"><div class="box yellow">△</div> 看情況</div>
+                <div class="legend-item"><div class="box"></div> 點擊 4 次清除</div>
             </div>
         </div>
 
@@ -83,16 +104,18 @@
     </aside>
 
     <main class="main-content">
-        <div class="schedule-grid" id="grid">
-            <!-- JS 自動生成 -->
+        <div class="schedule-wrapper">
+            <div class="schedule-grid" id="grid">
+                <!-- 由 JS 生成 -->
+            </div>
         </div>
     </main>
 
     <script>
-        // ⚠️ 請填入你的 Worker 網址
         const API_URL = 'https://class-time-table.yun-chi-96-11-9.workers.dev/api/save-schedule';
+        const USER_API_URL = 'https://class-time-table.yun-chi-96-11-9.workers.dev/api/get-user';
         
-        const DAYS = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+        const DAYS = ['一', '二', '三', '四', '五', '六', '日'];
         const HOURS = [
             '07:00-08:00', '08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00',
             '12:00-13:00', '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00',
@@ -103,45 +126,74 @@
         const uid = urlParams.get('uid');
         const gid = urlParams.get('gid');
 
-        if (!uid || !gid) {
-            document.getElementById('userInfo').innerText = '錯誤：無效的連結，請從 Discord 重新獲取。';
-        } else {
-            document.getElementById('userInfo').innerHTML = `正在編輯：<span>玩家 ${uid.slice(-4)}</span> 的課表`;
+        // 🌟 獲取 Discord 用戶名稱
+        async function fetchUserName() {
+            if (!uid) return '未知玩家';
+            try {
+                const res = await fetch(`${USER_API_URL}?uid=${uid}`);
+                const data = await res.json();
+                return data.name || '未知玩家';
+            } catch (e) {
+                return '未知玩家';
+            }
         }
 
-        const grid = document.getElementById('grid');
-        
-        // 生成表頭
-        grid.innerHTML += `<div class="header-cell"></div>`;
-        DAYS.forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
+        async function init() {
+            if (!uid || !gid) {
+                document.getElementById('userInfo').innerHTML = '<span style="color:var(--red)">錯誤：無效的連結</span>';
+                return;
+            }
 
-        // 生成表格 (16小時 x 7天)
-        HOURS.forEach(hour => {
-            grid.innerHTML += `<div class="time-cell">${hour}</div>`;
-            DAYS.forEach((day, dayIndex) => {
-                const slot = document.createElement('div');
-                slot.className = 'slot';
-                slot.dataset.day = dayIndex + 1; // 1~7
-                slot.dataset.time = hour;
-                
-                // 點擊切換狀態 (灰 -> 綠 -> 紅 -> 黃 -> 灰)
-                slot.addEventListener('click', () => {
-                    if (slot.classList.contains('free')) {
-                        slot.classList.remove('free');
-                        slot.classList.add('busy');
-                    } else if (slot.classList.contains('busy')) {
-                        slot.classList.remove('busy');
-                        slot.classList.add('maybe');
-                    } else if (slot.classList.contains('maybe')) {
-                        slot.classList.remove('maybe');
-                    } else {
-                        slot.classList.add('free');
-                    }
-                });
+            const username = await fetchUserName();
+            document.getElementById('userInfo').innerHTML = `正在編輯：<span>${username}</span>`;
 
-                grid.appendChild(slot);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = ''; // 清空
+
+            // 建立表頭
+            const headerFragment = document.createDocumentFragment();
+            headerFragment.appendChild(document.createElement('div')).className = 'header-cell';
+            DAYS.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'header-cell';
+                div.innerText = `星期${d}`;
+                headerFragment.appendChild(div);
             });
-        });
+            grid.appendChild(headerFragment);
+
+            // 建立表格內容 (修復點擊 Bug，純用 appendChild)
+            HOURS.forEach(hour => {
+                const timeCell = document.createElement('div');
+                timeCell.className = 'time-cell';
+                timeCell.innerText = hour;
+                grid.appendChild(timeCell);
+
+                DAYS.forEach((_, dayIndex) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.dataset.day = dayIndex + 1;
+                    slot.dataset.time = hour;
+                    slot.dataset.status = 'none'; // 預設狀態
+
+                    // 點擊事件：灰 -> 綠 -> 紅 -> 黃 -> 灰
+                    slot.addEventListener('click', () => {
+                        const current = slot.dataset.status;
+                        let next = 'none';
+                        let text = '';
+
+                        if (current === 'none') { next = 'free'; text = '○'; }
+                        else if (current === 'free') { next = 'busy'; text = '✕'; }
+                        else if (current === 'busy') { next = 'maybe'; text = '△'; }
+                        else { next = 'none'; text = ''; }
+
+                        slot.dataset.status = next;
+                        slot.innerText = text;
+                    });
+
+                    grid.appendChild(slot);
+                });
+            });
+        }
 
         // 儲存資料
         document.getElementById('saveBtn').addEventListener('click', async (e) => {
@@ -152,16 +204,11 @@
 
             const slots = [];
             document.querySelectorAll('.slot').forEach(slot => {
-                let status = '';
-                if (slot.classList.contains('free')) status = 'free';
-                else if (slot.classList.contains('busy')) status = 'busy';
-                else if (slot.classList.contains('maybe')) status = 'maybe';
-                
-                if (status) {
+                if (slot.dataset.status !== 'none') {
                     slots.push({
                         day: parseInt(slot.dataset.day),
                         time: slot.dataset.time,
-                        status: status
+                        status: slot.dataset.status
                     });
                 }
             });
@@ -187,6 +234,8 @@
                 btn.disabled = false;
             }
         });
+
+        init();
     </script>
 </body>
 </html>

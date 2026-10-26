@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>空堂登記 | 遊戲玩家查詢</title>
     <style>
         :root {
@@ -13,9 +13,13 @@
             --text-sub: #94a3b8;
             --border: #2d333b;
             
-            --green: #238636; --green-bg: rgba(35, 134, 54, 0.25);
-            --red: #da3633;   --red-bg: rgba(218, 54, 51, 0.25);
-            --yellow: #d29922; --yellow-bg: rgba(210, 153, 34, 0.25);
+            /* 狀態顏色 */
+            --green: #238636;
+            --green-bg: rgba(35, 134, 54, 0.25);
+            --red: #da3633;
+            --red-bg: rgba(218, 54, 51, 0.25);
+            --yellow: #d29922;
+            --yellow-bg: rgba(210, 153, 34, 0.25);
             
             --active-border: #ffffff;
             --info-bg: rgba(88, 101, 242, 0.15);
@@ -23,21 +27,41 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
-        body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        .sidebar { width: 320px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+        .sidebar { width: 340px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; }
         .sidebar h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
         .user-info { font-size: 15px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         .user-info span { color: var(--text-main); font-weight: 600; font-size: 16px; }
+
+        /* 說明卡片 */
+        .guide-card {
+            background-color: var(--info-bg);
+            border: 1px solid var(--info-border);
+            border-radius: 8px;
+            padding: 18px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-main);
+        }
+        .guide-card h3 { font-size: 15px; color: #8b9df9; margin-bottom: 10px; font-weight: 600; }
+        .guide-card p { color: var(--text-sub); margin-bottom: 12px; }
+        .guide-card ul { list-style: none; padding-left: 0; color: var(--text-sub); margin-bottom: 15px; }
+        .guide-card li { position: relative; padding-left: 20px; margin-bottom: 6px; }
         
-        .instruction-title { font-size: 13px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 10px; }
+        /* 星星 SVG */
+        .star-icon { position: absolute; left: 0; top: 3px; width: 14px; height: 14px; fill: var(--yellow); }
         
+        .instruction-title { font-size: 13px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        
+        /* 畫筆區 */
         .palette { display: flex; flex-direction: column; gap: 10px; }
         .brush-btn { 
             display: flex; align-items: center; gap: 12px; 
             background-color: var(--bg); border: 1px solid var(--border); 
             padding: 12px 15px; border-radius: 8px; cursor: pointer; 
             transition: all 0.2s; font-size: 15px; font-weight: 500; color: var(--text-main);
+            user-select: none;
         }
         .brush-btn:hover { border-color: var(--text-sub); }
         .brush-btn.active { border-color: var(--active-border); box-shadow: 0 0 10px rgba(255,255,255,0.1); background-color: var(--card-bg); }
@@ -45,43 +69,29 @@
         .brush-btn.active[data-brush="busy"] { border-color: var(--red); background-color: var(--red-bg); }
         .brush-btn.active[data-brush="maybe"] { border-color: var(--yellow); background-color: var(--yellow-bg); }
         
-        .brush-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
-        .brush-btn[data-brush="free"] .brush-icon { background-color: var(--green); color: #fff; }
-        .brush-btn[data-brush="busy"] .brush-icon { background-color: var(--red); color: #fff; }
-        .brush-btn[data-brush="maybe"] .brush-icon { background-color: var(--yellow); color: #fff; }
-        .brush-btn[data-brush="eraser"] .brush-icon { background-color: transparent; border: 1px dashed var(--text-sub); color: var(--text-sub); }
+        .brush-icon { width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; }
+        .brush-icon svg { width: 100%; height: 100%; }
+        .brush-btn[data-brush="free"] .brush-icon svg { stroke: var(--green); }
+        .brush-btn[data-brush="busy"] .brush-icon svg { stroke: var(--red); }
+        .brush-btn[data-brush="maybe"] .brush-icon svg { stroke: var(--yellow); }
+        .brush-btn[data-brush="eraser"] .brush-icon svg { stroke: var(--text-sub); }
 
-        /* 🌟 潤色後的教學卡片 */
-        .guide-card {
-            background-color: var(--info-bg);
-            border: 1px solid var(--info-border);
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-main);
-        }
-        .guide-card strong { color: #8b9df9; font-size: 14px; display: block; margin-bottom: 5px; }
-        .guide-card p { color: var(--text-sub); margin-bottom: 8px; }
-        .guide-card ul { padding-left: 18px; color: var(--text-sub); margin-bottom: 8px; }
-        .guide-card li { margin-bottom: 4px; }
-
-        /* 兩個按鈕 */
-        .btn-group { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+        /* 按鈕群 */
+        .btn-group { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; }
         .action-btn { 
             border: none; padding: 14px; font-size: 15px; font-weight: 600; 
             border-radius: 8px; cursor: pointer; transition: all 0.3s; width: 100%;
         }
         .draft-btn { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); }
         .draft-btn:hover { background-color: var(--border); }
-        .submit-btn { background-color: var(--text-main); color: var(--bg); }
-        .submit-btn:hover { opacity: 0.8; }
+        .submit-btn { background-color: #5865F2; color: white; }
+        .submit-btn:hover { background-color: #4752C4; }
         .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* 表格區 */
         .main-content { flex: 1; padding: 40px; display: flex; justify-content: center; overflow-x: auto; }
         .schedule-wrapper { width: 100%; max-width: 850px; background-color: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .schedule-grid { display: grid; grid-template-columns: 70px repeat(7, 1fr); gap: 8px; }
+        .schedule-grid { display: grid; grid-template-columns: 70px repeat(7, 1fr); gap: 8px; user-select: none; }
         
         .header-cell { font-size: 14px; color: var(--text-sub); text-align: center; padding-bottom: 12px; font-weight: 600; }
         .time-cell { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: 500; }
@@ -89,18 +99,28 @@
         .slot { 
             background-color: var(--bg); border: 1px solid var(--border); border-radius: 8px; height: 44px; 
             cursor: pointer; transition: all 0.1s; display: flex; justify-content: center; align-items: center; 
-            font-size: 18px; font-weight: bold; user-select: none;
         }
-        .slot:hover { border-color: var(--text-sub); transform: scale(1.02); }
-        .slot[data-status="free"] { background-color: var(--green-bg); border-color: var(--green); color: var(--green); }
-        .slot[data-status="busy"] { background-color: var(--red-bg); border-color: var(--red); color: var(--red); }
-        .slot[data-status="maybe"] { background-color: var(--yellow-bg); border-color: var(--yellow); color: var(--yellow); }
+        .slot:hover { border-color: var(--text-sub); }
+        .slot svg { width: 18px; height: 18px; opacity: 0; transition: opacity 0.2s; }
+        
+        /* 狀態樣式 */
+        .slot[data-status="free"] { background-color: var(--green-bg); border-color: var(--green); }
+        .slot[data-status="free"] svg { stroke: var(--green); opacity: 1; }
+        .slot[data-status="busy"] { background-color: var(--red-bg); border-color: var(--red); }
+        .slot[data-status="busy"] svg { stroke: var(--red); opacity: 1; }
+        .slot[data-status="maybe"] { background-color: var(--yellow-bg); border-color: var(--yellow); }
+        .slot[data-status="maybe"] svg { stroke: var(--yellow); opacity: 1; }
 
+        /* 錯誤畫面 */
+        .error-screen { display: none; width: 100%; height: 100vh; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
+        .error-screen h2 { color: var(--red); }
+
+        /* 手機版響應式 */
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
             .palette { flex-direction: row; flex-wrap: wrap; }
-            .brush-btn { flex: 1; min-width: 120px; justify-content: center; }
+            .brush-btn { flex: 1; min-width: 120px; justify-content: center; padding: 10px; }
             .main-content { padding: 20px 10px; }
             .schedule-grid { min-width: 600px; gap: 6px; }
             .slot { height: 40px; border-radius: 6px; }
@@ -113,40 +133,65 @@
     <aside class="sidebar">
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
-        
-        <div>
-            <div class="instruction-title">1. 選擇畫筆</div>
-            <div class="palette" id="palette">
-                <div class="brush-btn active" data-brush="free"><div class="brush-icon">○</div> 可以玩</div>
-                <div class="brush-btn" data-brush="busy"><div class="brush-icon">✕</div> 不行 / 上課</div>
-                <div class="brush-btn" data-brush="maybe"><div class="brush-icon">△</div> 看情況</div>
-                <div class="brush-btn" data-brush="eraser"><div class="brush-icon"></div> 橡皮擦 (清除)</div>
-            </div>
-        </div>
 
+        <!-- 操作說明 (在畫筆上方) -->
         <div class="guide-card">
-            <strong>操作說明</strong>
-            <p>點擊上方四種狀態後，再點擊右側表格即可上色。</p>
+            <h3>操作說明</h3>
+            <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
             <ul>
-                <li>若想取消上色，<strong>再次點擊</strong>該格子即可。</li>
-                <li>橡皮擦用於強制清除未生效的殘留顏色。</li>
+                <li>
+                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    若想換色不用清除直接新色覆蓋。
+                </li>
+                <li>
+                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    若想取消上色，再次點擊該格即可。
+                </li>
+                <li>
+                    <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="star-icon" style="left: 14px;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    可以直接按住滑鼠/手指拉一整排！
+                </li>
             </ul>
+            <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
             <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
-                <strong>2. 儲存進度</strong><br>
-                未完成時請點 <strong>「暫存進度」</strong>（支援雲端跨裝置）；<br>
-                確認完成後，請點 <strong>「同步至 Discord」</strong> 正式發布。
+                2. 儲存進度<br>
+                未完成時請點「暫存進度」(支援雲端存儲)；<br>
+                確認完成後，請點「提交表單」送出。
             </p>
         </div>
 
+        <div>
+            <div class="instruction-title">選擇畫筆</div>
+            <div class="palette" id="palette">
+                <div class="brush-btn active" data-brush="free">
+                    <div class="brush-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg></div> 可以玩
+                </div>
+                <div class="brush-btn" data-brush="busy">
+                    <div class="brush-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div> 不行 / 上課
+                </div>
+                <div class="brush-btn" data-brush="maybe">
+                    <div class="brush-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 22h20L12 2z"/></svg></div> 看情況
+                </div>
+                <div class="brush-btn" data-brush="eraser">
+                    <div class="brush-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L21 10C21.5 10.5 21.5 11.5 21 12L13 20"/><path d="M17 13L7 3"/></svg></div> 橡皮擦
+                </div>
+            </div>
+        </div>
+
         <div class="btn-group">
-            <button class="action-btn draft-btn" id="draftBtn">暫存進度 (不發布)</button>
-            <button class="action-btn submit-btn" id="submitBtn">同步至 Discord (發布)</button>
+            <button class="action-btn draft-btn" id="draftBtn">暫存進度 (支援雲端)</button>
+            <button class="action-btn submit-btn" id="submitBtn">提交表單</button>
         </div>
     </aside>
 
     <main class="main-content">
-        <div class="schedule-wrapper">
+        <div class="schedule-wrapper" id="scheduleWrapper">
             <div class="schedule-grid" id="grid"></div>
+        </div>
+        <div class="error-screen" id="errorScreen">
+            <h2>無效的連結</h2>
+            <p style="color: var(--text-sub);">請從 Discord 輸入 /填寫課表 獲取專屬連結。</p>
         </div>
     </main>
 
@@ -167,6 +212,14 @@
         const gid = urlParams.get('gid');
 
         let currentBrush = 'free';
+        let isDrawing = false;
+
+        // SVG 圖標定義
+        const SVGS = {
+            free: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
+            busy: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+            maybe: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 22h20L12 2z"/></svg>'
+        };
 
         // 切換畫筆
         document.querySelectorAll('.brush-btn').forEach(btn => {
@@ -199,7 +252,8 @@
         // 初始化
         async function init() {
             if (!uid || !gid) {
-                document.getElementById('userInfo').innerHTML = '<span style="color:var(--red)">錯誤：無效的連結</span>';
+                document.getElementById('scheduleWrapper').style.display = 'none';
+                document.getElementById('errorScreen').style.display = 'flex';
                 return;
             }
 
@@ -243,32 +297,66 @@
                     const savedStatus = localDataMap[`${dayNum}_${hour}`] || 'none';
                     setSlotStatus(slot, savedStatus);
 
-                    slot.addEventListener('click', () => {
-                        const currentStatus = slot.dataset.status;
-                        let newStatus = 'none';
-
-                        if (currentBrush === 'eraser') {
-                            newStatus = 'none';
-                        } else {
-                            newStatus = (currentStatus === currentBrush) ? 'none' : currentBrush;
-                        }
-
-                        setSlotStatus(slot, newStatus);
+                    // 滑鼠事件
+                    slot.addEventListener('mousedown', (e) => {
+                        e.preventDefault(); // 防止選字
+                        isDrawing = true;
+                        applyBrush(slot);
                     });
+                    slot.addEventListener('mouseenter', () => {
+                        if (isDrawing) applyBrush(slot);
+                    });
+
+                    // 觸控事件 (手機)
+                    slot.addEventListener('touchstart', (e) => {
+                        isDrawing = true;
+                        applyBrush(slot);
+                    }, { passive: true });
+                    
+                    slot.addEventListener('touchmove', (e) => {
+                        if (!isDrawing) return;
+                        const touch = e.touches[0];
+                        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (element && element.classList.contains('slot')) {
+                            applyBrush(element);
+                        }
+                    }, { passive: true });
 
                     grid.appendChild(slot);
                 });
             });
         }
 
-        function setSlotStatus(slot, status) {
-            slot.dataset.status = status;
-            if (status === 'free') slot.innerText = '○';
-            else if (status === 'busy') slot.innerText = '✕';
-            else if (status === 'maybe') slot.innerText = '△';
-            else slot.innerText = '';
+        // 塗色邏輯
+        function applyBrush(slot) {
+            const currentStatus = slot.dataset.status;
+            let newStatus = 'none';
+
+            if (currentBrush === 'eraser') {
+                newStatus = 'none';
+            } else {
+                // 如果點擊的格子跟畫筆顏色一樣，就清除 (點擊取消)
+                newStatus = (currentStatus === currentBrush) ? 'none' : currentBrush;
+            }
+
+            setSlotStatus(slot, newStatus);
         }
 
+        // 更新格子畫面
+        function setSlotStatus(slot, status) {
+            slot.dataset.status = status;
+            if (status === 'none') {
+                slot.innerHTML = '';
+            } else {
+                slot.innerHTML = SVGS[status];
+            }
+        }
+
+        // 全域放開滑鼠/手指
+        window.addEventListener('mouseup', () => isDrawing = false);
+        window.addEventListener('touchend', () => isDrawing = false);
+
+        // 收集資料
         function getSlotsData() {
             const slots = [];
             document.querySelectorAll('.slot').forEach(slot => {
@@ -283,9 +371,8 @@
             return slots;
         }
 
-        // 儲存通用邏輯
+        // 儲存邏輯
         async function handleSave(action, btnElement) {
-            if (!uid || !gid) return alert('無效的連結');
             const originalText = btnElement.innerText;
             btnElement.disabled = true;
             btnElement.innerText = '處理中...';
@@ -300,14 +387,14 @@
                 });
 
                 if (res.ok) {
-                    btnElement.innerText = action === 'draft' ? '✅ 暫存成功！' : '✅ 同步成功！';
-                    setTimeout(() => btnElement.innerText = originalText, 2500);
+                    btnElement.innerText = action === 'draft' ? '暫存成功' : '提交成功';
+                    setTimeout(() => btnElement.innerText = originalText, 2000);
                 } else {
                     throw new Error();
                 }
             } catch (err) {
-                btnElement.innerText = '❌ 失敗，請重試';
-                setTimeout(() => btnElement.innerText = originalText, 2500);
+                btnElement.innerText = '失敗，請重試';
+                setTimeout(() => btnElement.innerText = originalText, 2000);
             } finally {
                 btnElement.disabled = false;
             }

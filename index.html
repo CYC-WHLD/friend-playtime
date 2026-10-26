@@ -3,269 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬空堂登記表 | Class08</title>
+    <title>空堂登記 | 遊戲玩家查詢</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1b1e;
-            color: #eee;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
+        :root {
+            --bg: #0f1115;
+            --sidebar-bg: #16181d;
+            --card-bg: #1c1f26;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border: #2d333b;
+            --green: #238636;
+            --green-bg: rgba(35, 134, 54, 0.2);
+            --red: #da3633;
+            --red-bg: rgba(218, 54, 51, 0.2);
+            --yellow: #d29922;
+            --yellow-bg: rgba(210, 153, 34, 0.2);
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        /* 左側說明欄 */
+        .sidebar { width: 300px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        .user-info { font-size: 14px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .user-info span { color: var(--text-main); font-weight: 600; }
+        .instruction { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
+        .legend { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); }
+        .box.green { background-color: var(--green); border-color: var(--green); }
+        .box.red { background-color: var(--red); border-color: var(--red); }
+        .box.yellow { background-color: var(--yellow); border-color: var(--yellow); }
         
-        /* 讓主要內容自動撐開，把 Footer 推到底部 */
-        .main-content {
-            flex: 1;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .save-btn { margin-top: auto; background-color: var(--text-main); color: var(--bg); border: none; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        .save-btn:hover { opacity: 0.8; }
+        .save-btn:disabled { background-color: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
-        h1 { color: #5865F2; margin-bottom: 5px; }
-        p.subtitle { color: #b9bbbe; margin-bottom: 25px; text-align: center; }
+        /* 右側表格區 */
+        .main-content { flex: 1; padding: 30px; overflow-x: auto; }
+        .schedule-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 4px; min-width: 800px; }
         
-        /* 表格容器 */
-        .schedule-container {
-            display: grid;
-            grid-template-columns: 60px repeat(5, 1fr);
-            gap: 6px;
-            max-width: 800px;
-            width: 100%;
-            background: #2b2d31;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .header-cell { font-size: 13px; color: var(--text-sub); text-align: center; padding-bottom: 10px; font-weight: 600; }
+        .time-cell { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+        
+        .slot { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; height: 36px; cursor: pointer; transition: all 0.15s; }
+        .slot:hover { border-color: var(--text-sub); }
+        
+        /* 三種狀態 */
+        .slot.free { background-color: var(--green-bg); border-color: var(--green); }
+        .slot.busy { background-color: var(--red-bg); border-color: var(--red); }
+        .slot.maybe { background-color: var(--yellow-bg); border-color: var(--yellow); }
 
-        /* 表頭與節次 */
-        .header, .time-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #b9bbbe;
-            background: #313338;
-            border-radius: 6px;
-            padding: 10px 5px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        /* 格子 (空堂) */
-        .cell {
-            background: #232428;
-            border: 2px solid #313338;
-            border-radius: 6px;
-            height: 50px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #555;
-        }
-
-        .cell:hover { border-color: #5865F2; }
-
-        /* 被選中的空堂 (綠色) */
-        .cell.selected {
-            background: rgba(35, 165, 90, 0.2);
-            border-color: #23a55a;
-            color: #23a55a;
-            font-weight: bold;
-        }
-
-        /* 儲存按鈕 */
-        .save-btn {
-            margin-top: 30px;
-            background: #23a55a;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .save-btn:hover { background: #1e8e4d; }
-        .save-btn:disabled { background: #555; cursor: not-allowed; }
-
-        /* 🌟 頁尾 (Footer) 樣式 */
-        .footer {
-            margin-top: 50px;
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #313338;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #949ba4;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer a:hover {
-            color: #5865F2;
-            text-decoration: underline;
-        }
-
-        /* 手機版優化 */
-        @media (max-width: 600px) {
-            .schedule-container { grid-template-columns: 40px repeat(5, 1fr); gap: 4px; padding: 8px; }
-            .cell { height: 40px; font-size: 10px; }
-            .header, .time-label { font-size: 12px; padding: 5px 2px; }
-            .footer { flex-direction: column; align-items: center; gap: 10px; }
+        /* 手機版調整 */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+            .main-content { padding: 20px 10px; }
+            .save-btn { margin-top: 20px; width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="main-content">
-        <h1>📅 登記空堂</h1>
-        <p class="subtitle">請點擊（或按住拖曳）你沒課的時間。<br><span style="color:#23a55a">綠色代表有空</span>，未選取代表有課或沒空。</p>
-
-        <div class="schedule-container" id="grid">
-            <!-- JS 會自動生成格子 -->
+    <aside class="sidebar">
+        <h1>玩家空堂登記</h1>
+        <div class="user-info" id="userInfo">載入中...</div>
+        
+        <div class="instruction">
+            <p>請點擊表格中的時間格子來標記你的狀態：</p>
+            <div class="legend">
+                <div class="legend-item"><div class="box green"></div> 點擊 1 次：可以玩</div>
+                <div class="legend-item"><div class="box red"></div> 點擊 2 次：不行 / 上課</div>
+                <div class="legend-item"><div class="box yellow"></div> 點擊 3 次：看情況</div>
+                <div class="legend-item"><div class="box"></div> 點擊 4 次：清除狀態</div>
+            </div>
         </div>
 
-        <button class="save-btn" id="saveBtn">💾 儲存並同步至 Discord</button>
-    </div>
+        <button class="save-btn" id="saveBtn">儲存並同步至 Discord</button>
+    </aside>
 
-    <!-- 🌟 機器人政策連結 (合規必須) -->
-    <div class="footer">
-        <a href="https://cyc-whld.github.io/Discord-Countdown-bot/" target="_blank" rel="noopener">服務條款 (Terms of Service)</a>
-        <a href="https://cyc-whld.github.io/Discord-Countdown-bot/#privacy" target="_blank" rel="noopener">隱私權政策 (Privacy Policy)</a>
-        <a href="https://discord.gg/nXaNZrXtMx" target="_blank" rel="noopener">聯絡我們 (Support Server)</a>
-    </div>
+    <main class="main-content">
+        <div class="schedule-grid" id="grid">
+            <!-- JS 自動生成 -->
+        </div>
+    </main>
 
     <script>
-        // 你的 Cloudflare Worker 網址
+        // ⚠️ 請填入你的 Worker 網址
         const API_URL = 'https://class-time-table.yun-chi-96-11-9.workers.dev/api/save-schedule';
         
-        // 節次定義
-        const PERIODS = [
-            { id: '1', label: '1 (08:10)' },
-            { id: '2', label: '2 (09:10)' },
-            { id: '3', label: '3 (10:10)' },
-            { id: '4', label: '4 (11:10)' },
-            { id: '14', label: 'N (12:10)' },
-            { id: '5', label: '5 (13:10)' },
-            { id: '6', label: '6 (14:10)' },
-            { id: '7', label: '7 (15:20)' },
-            { id: '8', label: '8 (16:20)' }
-        ];
-        const DAYS = [
-            { id: 1, label: '星期一' },
-            { id: 2, label: '星期二' },
-            { id: 3, label: '星期三' },
-            { id: 4, label: '星期四' },
-            { id: 5, label: '星期五' }
+        const DAYS = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+        const HOURS = [
+            '07:00-08:00', '08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00',
+            '12:00-13:00', '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00',
+            '17:00-18:00', '18:00-19:00', '19:00-20:00', '20:00-21:00', '21:00-22:00', '22:00-23:00'
         ];
 
-        // 取得網址參數
         const urlParams = new URLSearchParams(window.location.search);
         const uid = urlParams.get('uid');
         const gid = urlParams.get('gid');
 
         if (!uid || !gid) {
-            alert('無效的連結，請從 Discord 機器人重新獲取！');
+            document.getElementById('userInfo').innerText = '錯誤：無效的連結，請從 Discord 重新獲取。';
+        } else {
+            document.getElementById('userInfo').innerHTML = `正在編輯：<span>玩家 ${uid.slice(-4)}</span> 的課表`;
         }
 
         const grid = document.getElementById('grid');
         
-        // 1. 生成表頭
-        grid.innerHTML += `<div class="header"></div>`;
-        DAYS.forEach(d => {
-            grid.innerHTML += `<div class="header">${d.label}</div>`;
-        });
+        // 生成表頭
+        grid.innerHTML += `<div class="header-cell"></div>`;
+        DAYS.forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
 
-        // 2. 生成表格內容
-        PERIODS.forEach(p => {
-            grid.innerHTML += `<div class="time-label">${p.label}</div>`;
-            DAYS.forEach(d => {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.dataset.day = d.id;
-                cell.dataset.period = p.id;
-                cell.textContent = '點擊';
+        // 生成表格 (16小時 x 7天)
+        HOURS.forEach(hour => {
+            grid.innerHTML += `<div class="time-cell">${hour}</div>`;
+            DAYS.forEach((day, dayIndex) => {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.dataset.day = dayIndex + 1; // 1~7
+                slot.dataset.time = hour;
                 
-                // 點擊切換狀態
-                cell.addEventListener('click', () => {
-                    cell.classList.toggle('selected');
-                    cell.textContent = cell.classList.contains('selected') ? '有空' : '點擊';
+                // 點擊切換狀態 (灰 -> 綠 -> 紅 -> 黃 -> 灰)
+                slot.addEventListener('click', () => {
+                    if (slot.classList.contains('free')) {
+                        slot.classList.remove('free');
+                        slot.classList.add('busy');
+                    } else if (slot.classList.contains('busy')) {
+                        slot.classList.remove('busy');
+                        slot.classList.add('maybe');
+                    } else if (slot.classList.contains('maybe')) {
+                        slot.classList.remove('maybe');
+                    } else {
+                        slot.classList.add('free');
+                    }
                 });
 
-                grid.appendChild(cell);
+                grid.appendChild(slot);
             });
         });
 
-        // 3. 儲存資料
+        // 儲存資料
         document.getElementById('saveBtn').addEventListener('click', async (e) => {
-            if (!uid || !gid) return;
+            if (!uid || !gid) return alert('無效的連結');
             const btn = e.target;
             btn.disabled = true;
-            btn.textContent = '儲存中...';
+            btn.innerText = '儲存中...';
 
-            let freeSlots = [];
-            
-            DAYS.forEach(d => {
-                const selectedPeriods = Array.from(grid.querySelectorAll(`.cell.selected[data-day="${d.id}"]`))
-                    .map(c => parseInt(c.dataset.period))
-                    .sort((a, b) => a - b);
-
-                if (selectedPeriods.length === 0) return;
-
-                let start = selectedPeriods[0];
-                let prev = selectedPeriods[0];
-                const timeMap = {
-                    1: ['08:10', '09:00'], 2: ['09:10', '10:00'], 3: ['10:10', '11:00'],
-                    4: ['11:10', '12:00'], 14: ['12:10', '13:00'], 5: ['13:10', '14:00'],
-                    6: ['14:10', '15:00'], 7: ['15:20', '16:10'], 8: ['16:20', '17:10']
-                };
-
-                for (let i = 1; i < selectedPeriods.length; i++) {
-                    const cur = selectedPeriods[i];
-                    if (cur !== prev + 1) {
-                        freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
-                        start = cur;
-                    }
-                    prev = cur;
+            const slots = [];
+            document.querySelectorAll('.slot').forEach(slot => {
+                let status = '';
+                if (slot.classList.contains('free')) status = 'free';
+                else if (slot.classList.contains('busy')) status = 'busy';
+                else if (slot.classList.contains('maybe')) status = 'maybe';
+                
+                if (status) {
+                    slots.push({
+                        day: parseInt(slot.dataset.day),
+                        time: slot.dataset.time,
+                        status: status
+                    });
                 }
-                freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
             });
 
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: uid, guildId: gid, freeSlots })
+                    body: JSON.stringify({ userId: uid, guildId: gid, slots })
                 });
 
                 if (res.ok) {
-                    btn.textContent = '✅ 儲存成功！可以關閉此視窗了';
-                    btn.style.background = '#23a55a';
+                    btn.innerText = '儲存成功，可關閉視窗';
+                    btn.style.backgroundColor = 'var(--green)';
+                    btn.style.color = '#fff';
                 } else {
-                    throw new Error('伺服器錯誤');
+                    throw new Error('Server error');
                 }
             } catch (err) {
-                btn.textContent = '❌ 儲存失敗，請重試';
-                btn.style.background = '#da373c';
+                btn.innerText = '儲存失敗，請重試';
+                btn.style.backgroundColor = 'var(--red)';
+                btn.style.color = '#fff';
                 btn.disabled = false;
             }
         });

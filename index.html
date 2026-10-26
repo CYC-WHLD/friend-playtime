@@ -59,6 +59,15 @@
             user-select: none;
         }
         .guide-summary::-webkit-details-marker { display: none; }
+        
+        /* 點我收放的文字，讓它靠右邊 */
+        .toggle-hint {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-left: auto; /* 自動推到最右邊 */
+            margin-right: 8px; /* 與箭頭保持距離 */
+        }
+
         /* 讓箭頭更大、更明顯 */
         .guide-summary::after { 
             content: '▼'; 
@@ -167,7 +176,6 @@
             .sidebar h1 { display: none; } 
             .user-info { 
                 display: block; 
-                /* 🌟 往下移動約一行的寬度，避開手機上方狀態列 */
                 margin-top: 36px; 
                 padding-bottom: 8px; 
                 font-size: 13px; 
@@ -249,9 +257,12 @@
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
 
-        <!-- 手機版可摺疊的操作說明 -->
+        <!-- 手機版可摺疊的操作說明 (改用 flex 排版) -->
         <details class="guide-card" open>
-            <summary class="guide-summary">操作說明&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;點我收放</summary>
+            <summary class="guide-summary">
+                <span>操作說明</span>
+                <span class="toggle-hint">點我收放</span>
+            </summary>
             <div class="guide-content">
                 <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
                 <ul>

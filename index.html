@@ -56,9 +56,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            user-select: none;
         }
         .guide-summary::-webkit-details-marker { display: none; }
-        .guide-summary::after { content: '▼'; font-size: 10px; transition: transform 0.2s; }
+        /* 讓箭頭更大、更明顯 */
+        .guide-summary::after { 
+            content: '▼'; 
+            font-size: 14px; 
+            font-weight: 900;
+            color: #8b9df9;
+            transition: transform 0.3s ease; 
+        }
         details[open] .guide-summary::after { transform: rotate(180deg); }
 
         .guide-content { padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
@@ -151,7 +159,8 @@
                 width: 100%; 
                 border-right: none; 
                 border-bottom: 1px solid var(--border); 
-                padding: 12px 15px; 
+                /* 將頂部留白加大，避免文字被系統狀態列遮擋 */
+                padding: 32px 15px 12px 15px; 
                 flex-shrink: 0;
                 gap: 12px;
             }
@@ -165,7 +174,7 @@
             }
             .user-info span { font-size: 14px; }
 
-            .guide-card { padding: 12px; }
+            .guide-card { padding: 12px 15px; }
             .guide-summary { font-size: 14px; }
             
             .palette { 
@@ -191,6 +200,8 @@
                 background-color: var(--sidebar-bg); 
                 border-top: 1px solid var(--border);
                 padding: 10px 15px;
+                /* 底部也加上安全區域留白，避免被 Home Indicator 遮擋 */
+                padding-bottom: calc(10px + env(safe-area-inset-bottom));
                 margin-top: 0;
                 flex-direction: row;
                 z-index: 100;
@@ -205,7 +216,7 @@
                 overflow-y: auto; 
                 overflow-x: hidden; 
                 align-items: flex-start;
-                padding-bottom: 80px; 
+                padding-bottom: 90px; 
             }
             .schedule-wrapper { 
                 padding: 10px; 
@@ -263,7 +274,7 @@
                 <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
                 <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
                     2. 儲存進度<br>
-                    未完成時請點「暫存進度」；<br>
+                    未完成時請點「暫存進度」(支援雲端儲存)<br>
                     確認完成後，請點「提交表單」送出。
                 </p>
             </div>
@@ -405,7 +416,6 @@
                     const savedStatus = localDataMap[`${dayNum}_${hour}`] || 'none';
                     setSlotStatus(slot, savedStatus);
 
-                    // 核心事件綁定：只在開始時觸發
                     slot.addEventListener('pointerdown', (e) => {
                         e.preventDefault(); 
                         isDrawing = true;
@@ -440,11 +450,9 @@
             }
         }
 
-        // 🌟 全新精準滑動判定機制：使用 elementFromPoint 抓取座標
         window.addEventListener('pointermove', (e) => {
             if (!isDrawing) return;
             
-            // 取得目前手指/滑鼠座標正下方的元素
             const element = document.elementFromPoint(e.clientX, e.clientY);
             
             if (element && element.classList.contains('slot')) {

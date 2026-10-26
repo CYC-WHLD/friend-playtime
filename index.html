@@ -159,8 +159,7 @@
                 width: 100%; 
                 border-right: none; 
                 border-bottom: 1px solid var(--border); 
-                /* 將頂部留白加大，避免文字被系統狀態列遮擋 */
-                padding: 32px 15px 12px 15px; 
+                padding: 15px; 
                 flex-shrink: 0;
                 gap: 12px;
             }
@@ -168,6 +167,8 @@
             .sidebar h1 { display: none; } 
             .user-info { 
                 display: block; 
+                /* 🌟 往下移動約 0.6 公分，避開手機系統狀態列 */
+                margin-top: 16px; 
                 padding-bottom: 8px; 
                 font-size: 13px; 
                 border-bottom: none;
@@ -200,7 +201,6 @@
                 background-color: var(--sidebar-bg); 
                 border-top: 1px solid var(--border);
                 padding: 10px 15px;
-                /* 底部也加上安全區域留白，避免被 Home Indicator 遮擋 */
                 padding-bottom: calc(10px + env(safe-area-inset-bottom));
                 margin-top: 0;
                 flex-direction: row;
@@ -251,7 +251,7 @@
 
         <!-- 手機版可摺疊的操作說明 -->
         <details class="guide-card" open>
-            <summary class="guide-summary">操作說明</summary>
+            <summary class="guide-summary">操作說明  [點我收放]</summary>
             <div class="guide-content">
                 <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
                 <ul>
@@ -274,7 +274,7 @@
                 <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
                 <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
                     2. 儲存進度<br>
-                    未完成時請點「暫存進度」(支援雲端儲存)<br>
+                    未完成時請點「暫存進度」(支援雲端存儲)<br>
                     確認完成後，請點「提交表單」送出。
                 </p>
             </div>

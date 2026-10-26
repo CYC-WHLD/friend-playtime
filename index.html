@@ -34,7 +34,7 @@
         .user-info { font-size: 15px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         .user-info span { color: var(--text-main); font-weight: 600; font-size: 16px; }
 
-        /* 說明卡片 */
+        /* 說明卡片 (支援摺疊) */
         .guide-card {
             background-color: var(--info-bg);
             border: 1px solid var(--info-border);
@@ -44,10 +44,27 @@
             line-height: 1.7;
             color: var(--text-main);
         }
-        .guide-card h3 { font-size: 15px; color: #8b9df9; margin-bottom: 10px; font-weight: 600; }
+        
+        /* 摺疊標題 */
+        .guide-summary {
+            font-size: 15px;
+            color: #8b9df9;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none; /* 隱藏預設箭頭 */
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .guide-summary::-webkit-details-marker { display: none; }
+        .guide-summary::after { content: '▼'; font-size: 10px; transition: transform 0.2s; }
+        details[open] .guide-summary::after { transform: rotate(180deg); }
+
+        .guide-content { padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+        
         .guide-card p { color: var(--text-sub); margin-bottom: 12px; }
         .guide-card ul { list-style: none; padding-left: 0; color: var(--text-sub); margin-bottom: 15px; }
-        
         .guide-card li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
         .guide-card li span { flex: 1; }
         .star-group { display: flex; flex-shrink: 0; margin-top: 2px; }
@@ -121,44 +138,53 @@
         .error-screen h2 { color: var(--red); }
 
         /* ==========================================
-           手機版極致優化（不影響電腦版）
+           手機版極致優化 (正方形格子 + 摺疊說明)
            ========================================== */
         @media (max-width: 900px) {
             body { 
                 flex-direction: column; 
                 height: 100vh; 
-                overflow: hidden; /* 避免整頁滾動，鎖定在畫面內 */
+                overflow: hidden; 
             }
             
-            /* 側邊欄改為頂部緊湊控制區 */
             .sidebar { 
                 width: 100%; 
                 border-right: none; 
                 border-bottom: 1px solid var(--border); 
                 padding: 12px 15px; 
                 flex-shrink: 0;
-                gap: 10px;
+                gap: 12px;
             }
             
-            /* 隱藏手機版不需要的冗長標題與說明 */
-            .sidebar h1, .user-info, .guide-card, .instruction-title { display: none; }
+            /* 顯示標題與用戶資訊 */
+            .sidebar h1 { display: none; } /* 標題太佔空間隱藏 */
+            .user-info { 
+                display: block; 
+                padding-bottom: 8px; 
+                font-size: 13px; 
+                border-bottom: none;
+            }
+            .user-info span { font-size: 14px; }
+
+            /* 說明卡片改為摺疊，節省空間 */
+            .guide-card { padding: 12px; }
+            .guide-summary { font-size: 14px; }
             
             /* 畫筆橫向排列 */
             .palette { 
                 flex-direction: row; 
-                gap: 8px; 
-                overflow-x: auto; 
+                gap: 6px; 
             }
-            .palette::-webkit-scrollbar { display: none; }
             .brush-btn { 
                 flex: 1; 
-                padding: 10px 5px; 
+                padding: 8px 4px; 
                 font-size: 13px; 
                 justify-content: center; 
                 flex-direction: column; 
-                gap: 4px;
+                gap: 2px;
             }
-            .brush-icon { width: 18px; height: 18px; }
+            .brush-icon { width: 16px; height: 16px; }
+            .instruction-title { display: none; }
             
             /* 按鈕區固定在底部 */
             .btn-group { 
@@ -177,26 +203,40 @@
             .draft-btn { flex: 1; }
             .submit-btn { flex: 1; }
             
-            /* 表格區佔滿剩餘空間，允許上下左右滑動 */
+            /* 表格區：正方形格子，不需要左右滑動 */
             .main-content { 
                 flex: 1; 
                 padding: 10px; 
-                overflow: auto; 
+                overflow-y: auto; 
+                overflow-x: hidden; 
                 align-items: flex-start;
-                padding-bottom: 80px; /* 為底部按鈕留空間 */
+                padding-bottom: 80px; 
             }
             .schedule-wrapper { 
-                width: max-content;
-                min-width: 100%;
                 padding: 10px; 
+                width: 100%;
             }
+            
+            /* 7天平分寬度，時間欄縮小 */
             .schedule-grid { 
-                min-width: 550px; 
-                gap: 6px; 
+                grid-template-columns: 40px repeat(7, 1fr); 
+                gap: 4px; 
             }
-            .slot { height: 40px; border-radius: 6px; }
-            .time-cell { padding-right: 10px; font-size: 12px; }
-            .header-cell { font-size: 13px; }
+            .time-cell { 
+                font-size: 10px; 
+                padding-right: 4px; 
+                justify-content: flex-end;
+            }
+            .header-cell { font-size: 11px; padding-bottom: 6px; }
+            
+            /* 🌟 格子變正方形 */
+            .slot { 
+                height: auto; 
+                aspect-ratio: 1 / 1; 
+                border-radius: 4px; 
+            }
+            /* 圖標縮小以適應正方形 */
+            .slot svg { width: 12px; height: 12px; }
         }
     </style>
 </head>
@@ -206,34 +246,36 @@
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
 
-        <!-- 操作說明 (在畫筆上方) -->
-        <div class="guide-card">
-            <h3>操作說明</h3>
-            <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
-            <ul>
-                <li>
-                    <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-                    <span>若想換色不用清除直接新色覆蓋。</span>
-                </li>
-                <li>
-                    <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-                    <span>若想取消上色，再次點擊該格即可。</span>
-                </li>
-                <li>
-                    <div class="star-group">
-                        <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    </div>
-                    <span>可以直接按住滑鼠/手指拉一整排！</span>
-                </li>
-            </ul>
-            <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
-            <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
-                2. 儲存進度<br>
-                未完成時請點「暫存進度」；<br>
-                確認完成後，請點「提交表單」送出。
-            </p>
-        </div>
+        <!-- 手機版可摺疊的操作說明 -->
+        <details class="guide-card" open>
+            <summary class="guide-summary">操作說明</summary>
+            <div class="guide-content">
+                <p>1. 點上方四種狀態後，再點擊右側表格即可上色。</p>
+                <ul>
+                    <li>
+                        <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                        <span>若想換色不用清除直接新色覆蓋。</span>
+                    </li>
+                    <li>
+                        <div class="star-group"><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                        <span>若想取消上色，再次點擊該格即可。</span>
+                    </li>
+                    <li>
+                        <div class="star-group">
+                            <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <span>可以直接按住滑鼠/手指拉一整排！</span>
+                    </li>
+                </ul>
+                <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
+                <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
+                    2. 儲存進度<br>
+                    未完成時請點「暫存進度」；<br>
+                    確認完成後，請點「提交表單」送出。
+                </p>
+            </div>
+        </details>
 
         <div>
             <div class="instruction-title">選擇畫筆</div>
@@ -253,7 +295,6 @@
             </div>
         </div>
 
-        <!-- 第 1 點：替換為雲端圖示 -->
         <div class="btn-group">
             <button class="action-btn draft-btn" id="draftBtn">
                 暫存進度
@@ -293,16 +334,14 @@
 
         let currentBrush = 'free';
         let isDrawing = false;
-        let lastSlotId = null; // 防止同一格重複觸發
+        let lastSlotId = null; 
 
-        // SVG 圖標定義
         const SVGS = {
             free: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
             busy: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
             maybe: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 22h20L12 2z"/></svg>'
         };
 
-        // 切換畫筆
         document.querySelectorAll('.brush-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
@@ -311,7 +350,6 @@
             });
         });
 
-        // 獲取用戶名稱
         async function fetchUserName() {
             if (!uid) return '未知玩家';
             try {
@@ -321,7 +359,6 @@
             } catch (e) { return '未知玩家'; }
         }
 
-        // 獲取雲端進度 (優先草稿)
         async function fetchSchedule() {
             if (!uid || !gid) return { slots: [], isDraft: false };
             try {
@@ -330,7 +367,6 @@
             } catch(e) { return { slots: [], isDraft: false }; }
         }
 
-        // 初始化
         async function init() {
             if (!uid || !gid) {
                 document.getElementById('scheduleWrapper').style.display = 'none';
@@ -350,7 +386,6 @@
             const grid = document.getElementById('grid');
             grid.innerHTML = ''; 
 
-            // 表頭
             const headerFragment = document.createDocumentFragment();
             headerFragment.appendChild(document.createElement('div')).className = 'header-cell';
             DAYS.forEach(d => {
@@ -361,7 +396,6 @@
             });
             grid.appendChild(headerFragment);
 
-            // 表格
             HOURS.forEach(hour => {
                 const timeCell = document.createElement('div');
                 timeCell.className = 'time-cell';
@@ -374,12 +408,11 @@
                     slot.className = 'slot';
                     slot.dataset.day = dayNum;
                     slot.dataset.time = hour;
-                    slot.dataset.id = `${dayNum}_${hour}`; // 用於防重複判定
+                    slot.dataset.id = `${dayNum}_${hour}`; 
                     
                     const savedStatus = localDataMap[`${dayNum}_${hour}`] || 'none';
                     setSlotStatus(slot, savedStatus);
 
-                    // 核心事件綁定 (Pointer Events 完美兼容滑鼠與手機)
                     slot.addEventListener('pointerdown', (e) => {
                         e.preventDefault(); 
                         isDrawing = true;
@@ -399,7 +432,6 @@
             });
         }
 
-        // 塗色邏輯
         function applyBrush(slot) {
             const currentStatus = slot.dataset.status;
             let newStatus = 'none';
@@ -413,7 +445,6 @@
             setSlotStatus(slot, newStatus);
         }
 
-        // 更新格子畫面
         function setSlotStatus(slot, status) {
             slot.dataset.status = status;
             if (status === 'none') {
@@ -423,14 +454,10 @@
             }
         }
 
-        // 全域放開事件 (指標事件)
         window.addEventListener('pointerup', () => { isDrawing = false; lastSlotId = null; });
         window.addEventListener('pointercancel', () => { isDrawing = false; lastSlotId = null; });
-        
-        // 阻止拖曳時選取文字
         document.addEventListener('dragstart', (e) => e.preventDefault());
 
-        // 收集資料
         function getSlotsData() {
             const slots = [];
             document.querySelectorAll('.slot').forEach(slot => {
@@ -445,9 +472,7 @@
             return slots;
         }
 
-        // 儲存邏輯
         async function handleSave(action, btnElement) {
-            // 這裡備份按鈕原本的 HTML（包含 SVG 圖示）
             const originalHTML = btnElement.innerHTML;
             btnElement.disabled = true;
             btnElement.innerText = '處理中...';

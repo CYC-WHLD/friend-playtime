@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專屬空堂登記表</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1b1e;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #5865F2; }
+        p { color: #b9bbbe; margin-bottom: 20px; }
+        
+        /* 表格容器 */
+        .schedule-container {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            gap: 6px;
+            max-width: 800px;
+            width: 100%;
+            background: #2b2d31;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 表頭與節次 */
+        .header, .time-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #b9bbbe;
+            background: #313338;
+            border-radius: 6px;
+            padding: 10px 5px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* 格子 (空堂) */
+        .cell {
+            background: #232428;
+            border: 2px solid #313338;
+            border-radius: 6px;
+            height: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .cell:hover {
+            border-color: #5865F2;
+        }
+
+        /* 被選中的空堂 (綠色) */
+        .cell.selected {
+            background: rgba(35, 165, 90, 0.2);
+            border-color: #23a55a;
+            color: #23a55a;
+            font-weight: bold;
+        }
+
+        /* 儲存按鈕 */
+        .save-btn {
+            margin-top: 30px;
+            background: #23a55a;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .save-btn:hover { background: #1e8e4d; }
+        .save-btn:disabled { background: #555; cursor: not-allowed; }
+
+        /* 手機版優化 */
+        @media (max-width: 600px) {
+            .schedule-container { grid-template-columns: 40px repeat(5, 1fr); gap: 4px; padding: 8px; }
+            .cell { height: 40px; font-size: 10px; }
+            .header, .time-label { font-size: 12px; padding: 5px 2px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📅 登記空堂</h1>
+    <p>請直接在下方點擊（或按住拖曳）你沒課的時間。<span style="color:#23a55a">綠色</span>代表有空。</p>
+
+    <div class="schedule-container" id="grid">
+        <!-- JS 會自動生成格子 -->
+    </div>
+
+    <button class="save-btn" id="saveBtn">💾 儲存並同步至 Discord</button>
+
+    <script>
+        // 你的 Cloudflare Worker 網址
+        const API_URL = 'https://你的worker網址.workers.dev/api/save-schedule';
+        
+        // 節次定義 (對齊原本的設定)
+        const PERIODS = [
+            { id: '1', label: '1 (08:10)' },
+            { id: '2', label: '2 (09:10)' },
+            { id: '3', label: '3 (10:10)' },
+            { id: '4', label: '4 (11:10)' },
+            { id: '14', label: 'N (12:10)' },
+            { id: '5', label: '5 (13:10)' },
+            { id: '6', label: '6 (14:10)' },
+            { id: '7', label: '7 (15:20)' },
+            { id: '8', label: '8 (16:20)' }
+        ];
+        const DAYS = [
+            { id: 1, label: '星期一' },
+            { id: 2, label: '星期二' },
+            { id: 3, label: '星期三' },
+            { id: 4, label: '星期四' },
+            { id: 5, label: '星期五' }
+        ];
+
+        // 取得網址參數
+        const urlParams = new URLSearchParams(window.location.search);
+        const uid = urlParams.get('uid');
+        const gid = urlParams.get('gid');
+
+        if (!uid || !gid) {
+            alert('無效的連結，請從 Discord 重新獲取！');
+        }
+
+        const grid = document.getElementById('grid');
+        
+        // 1. 生成表頭 (左上角留空 + 星期一~五)
+        grid.innerHTML += `<div class="header"></div>`;
+        DAYS.forEach(d => {
+            grid.innerHTML += `<div class="header">${d.label}</div>`;
+        });
+
+        // 2. 生成表格內容
+        PERIODS.forEach(p => {
+            // 左側節次
+            grid.innerHTML += `<div class="time-label">${p.label}</div>`;
+            
+            // 每一格
+            DAYS.forEach(d => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.day = d.id;
+                cell.dataset.period = p.id;
+                cell.textContent = '點擊';
+                
+                // 點擊切換狀態
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('selected');
+                    cell.textContent = cell.classList.contains('selected') ? '有空' : '點擊';
+                });
+
+                grid.appendChild(cell);
+            });
+        });
+
+        // 3. 儲存資料
+        document.getElementById('saveBtn').addEventListener('click', async (e) => {
+            if (!uid || !gid) return;
+            const btn = e.target;
+            btn.disabled = true;
+            btn.textContent = '儲存中...';
+
+            // 把選取的格子轉換成資料庫需要的格式
+            // 因為網頁是按格子點，我們把同一行的連續格子合併成時段
+            let freeSlots = [];
+            
+            DAYS.forEach(d => {
+                // 找出這一天所有被選中的節次
+                const selectedPeriods = Array.from(grid.querySelectorAll(`.cell.selected[data-day="${d.id}"]`))
+                    .map(c => parseInt(c.dataset.period))
+                    .sort((a, b) => a - b); // 重新排序節次 (1,2,3...)
+
+                if (selectedPeriods.length === 0) return;
+
+                // 演算法：合併連續節次
+                let start = selectedPeriods[0];
+                let prev = selectedPeriods[0];
+                const timeMap = {
+                    1: ['08:10', '09:00'], 2: ['09:10', '10:00'], 3: ['10:10', '11:00'],
+                    4: ['11:10', '12:00'], 14: ['12:10', '13:00'], 5: ['13:10', '14:00'],
+                    6: ['14:10', '15:00'], 7: ['15:20', '16:10'], 8: ['16:20', '17:10']
+                };
+
+                for (let i = 1; i < selectedPeriods.length; i++) {
+                    const cur = selectedPeriods[i];
+                    // 如果中斷了 (例如選了 1, 2, 5)
+                    if (cur !== prev + 1) {
+                        freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
+                        start = cur;
+                    }
+                    prev = cur;
+                }
+                // 推入最後一段
+                freeSlots.push({ day: d.id, start: timeMap[start][0], end: timeMap[prev][1] });
+            });
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: uid, guildId: gid, freeSlots })
+                });
+
+                if (res.ok) {
+                    btn.textContent = '✅ 儲存成功！可以關閉此視窗了';
+                    btn.style.background = '#23a55a';
+                } else {
+                    throw new Error('伺服器錯誤');
+                }
+            } catch (err) {
+                btn.textContent = '❌ 儲存失敗，請重試';
+                btn.style.background = '#da373c';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

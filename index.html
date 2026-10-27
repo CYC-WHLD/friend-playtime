@@ -34,7 +34,7 @@
         .user-info { font-size: 15px; color: var(--text-sub); padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         .user-info span { color: var(--text-main); font-weight: 600; font-size: 16px; }
 
-        /* 說明卡片 (支援摺疊) */
+        /* 說明卡片 */
         .guide-card {
             background-color: var(--info-bg);
             border: 1px solid var(--info-border);
@@ -45,7 +45,6 @@
             color: var(--text-main);
         }
         
-        /* 摺疊標題 */
         .guide-summary {
             font-size: 15px;
             color: #8b9df9;
@@ -60,26 +59,11 @@
         }
         .guide-summary::-webkit-details-marker { display: none; }
         
-        /* 點我收放的文字，讓它靠右邊 */
-        .toggle-hint {
-            font-size: 13px;
-            color: var(--text-sub);
-            margin-left: auto; /* 自動推到最右邊 */
-            margin-right: 8px; /* 與箭頭保持距離 */
-        }
-
-        /* 讓箭頭更大、更明顯 */
-        .guide-summary::after { 
-            content: '▼'; 
-            font-size: 14px; 
-            font-weight: 900;
-            color: #8b9df9;
-            transition: transform 0.3s ease; 
-        }
+        .toggle-hint { font-size: 13px; color: var(--text-sub); margin-left: auto; margin-right: 8px; }
+        .guide-summary::after { content: '▼'; font-size: 14px; font-weight: 900; color: #8b9df9; transition: transform 0.3s ease; }
         details[open] .guide-summary::after { transform: rotate(180deg); }
 
         .guide-content { padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-        
         .guide-card p { color: var(--text-sub); margin-bottom: 12px; }
         .guide-card ul { list-style: none; padding-left: 0; color: var(--text-sub); margin-bottom: 15px; }
         .guide-card li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
@@ -155,12 +139,11 @@
         .error-screen h2 { color: var(--red); }
 
         /* ==========================================
-           手機版極致優化 (修復底部遮擋 + 100dvh)
+           手機版極致優化 (徹底解決底部遮擋)
            ========================================== */
         @media (max-width: 900px) {
             body { 
                 flex-direction: column; 
-                /* 🌟 關鍵修復：使用 100dvh 動態適應瀏覽器工具列 */
                 height: 100vh; 
                 height: -webkit-fill-available;
                 height: 100dvh;
@@ -206,22 +189,20 @@
             
             .btn-group { 
                 position: fixed;
-                /* 🌟 關鍵修復：讓按鈕往上抬 15px，避開 Chrome / Discord 的底部工具列 */
-                bottom: 15px; 
+                bottom: 0; 
                 left: 0;
                 width: 100%;
                 background-color: var(--sidebar-bg); 
                 border-top: 1px solid var(--border);
-                border-bottom: 1px solid var(--border);
                 padding: 10px 15px;
-                /* 保留 iOS 底部安全區域 */
-                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+                /* 避開 iPhone 底部橫條與系統列的終極寫法 */
+                padding-bottom: calc(15px + env(safe-area-inset-bottom, 20px)); 
                 margin-top: 0;
                 flex-direction: row;
                 z-index: 100;
             }
             
-            /* 加上這個陰影漸層，讓按鈕浮起來時更有質感 */
+            /* 讓按鈕上方有一層漸層陰影，視覺上不會突兀 */
             .btn-group::before {
                 content: '';
                 position: absolute;
@@ -229,7 +210,7 @@
                 left: 0;
                 width: 100%;
                 height: 20px;
-                background: linear-gradient(to top, var(--sidebar-bg), transparent);
+                background: linear-gradient(to top, rgba(22, 24, 29, 0.9), transparent);
                 pointer-events: none;
             }
 
@@ -243,8 +224,8 @@
                 overflow-y: auto; 
                 overflow-x: hidden; 
                 align-items: flex-start;
-                /* 🌟 關鍵修復：加大底部留白，確保 22:00 的格子能完全滾出來 */
-                padding-bottom: 150px; 
+                /* 🌟 關鍵：把底部留白加到 220px，保證 22:00 的格子一定能滑出按鈕上方 */
+                padding-bottom: 220px; 
             }
             .schedule-wrapper { 
                 padding: 10px; 
@@ -277,7 +258,6 @@
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
 
-        <!-- 手機版可摺疊的操作說明 -->
         <details class="guide-card" open>
             <summary class="guide-summary">
                 <span>操作說明</span>

@@ -155,12 +155,15 @@
         .error-screen h2 { color: var(--red); }
 
         /* ==========================================
-           手機版極致優化 (正方形格子 + 摺疊說明)
+           手機版極致優化 (修復底部遮擋 + 100dvh)
            ========================================== */
         @media (max-width: 900px) {
             body { 
                 flex-direction: column; 
+                /* 🌟 關鍵修復：使用 100dvh 動態適應瀏覽器工具列 */
                 height: 100vh; 
+                height: -webkit-fill-available;
+                height: 100dvh;
                 overflow: hidden; 
             }
             
@@ -203,17 +206,33 @@
             
             .btn-group { 
                 position: fixed;
-                bottom: 0;
+                /* 🌟 關鍵修復：讓按鈕往上抬 15px，避開 Chrome / Discord 的底部工具列 */
+                bottom: 15px; 
                 left: 0;
                 width: 100%;
                 background-color: var(--sidebar-bg); 
                 border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
                 padding: 10px 15px;
-                padding-bottom: calc(10px + env(safe-area-inset-bottom));
+                /* 保留 iOS 底部安全區域 */
+                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
                 margin-top: 0;
                 flex-direction: row;
                 z-index: 100;
             }
+            
+            /* 加上這個陰影漸層，讓按鈕浮起來時更有質感 */
+            .btn-group::before {
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                width: 100%;
+                height: 20px;
+                background: linear-gradient(to top, var(--sidebar-bg), transparent);
+                pointer-events: none;
+            }
+
             .action-btn { padding: 12px; font-size: 14px; }
             .draft-btn { flex: 1; }
             .submit-btn { flex: 1; }
@@ -224,7 +243,8 @@
                 overflow-y: auto; 
                 overflow-x: hidden; 
                 align-items: flex-start;
-                padding-bottom: 90px; 
+                /* 🌟 關鍵修復：加大底部留白，確保 22:00 的格子能完全滾出來 */
+                padding-bottom: 150px; 
             }
             .schedule-wrapper { 
                 padding: 10px; 
@@ -257,7 +277,7 @@
         <h1>玩家空堂登記</h1>
         <div class="user-info" id="userInfo">正在載入玩家資訊...</div>
 
-        <!-- 手機版可摺疊的操作說明 (改用 flex 排版) -->
+        <!-- 手機版可摺疊的操作說明 -->
         <details class="guide-card" open>
             <summary class="guide-summary">
                 <span>操作說明</span>
@@ -285,7 +305,7 @@
                 <p>橡皮擦用於強制清除未生效的殘留顏色。</p>
                 <p style="margin-top: 10px; border-top: 1px solid var(--info-border); padding-top: 10px;">
                     2. 儲存進度<br>
-                    未完成時請點「暫存進度」(支援雲端存儲)<br>
+                    未完成時請點「暫存進度」<br>
                     確認完成後，請點「提交表單」送出。
                 </p>
             </div>
